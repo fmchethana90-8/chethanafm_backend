@@ -2,5 +2,5 @@ from django.urls import path
 from .views import ProgramScheduleView
 
 urlpatterns = [
-    path('schedule/', ProgramScheduleView.as_view()),
+    path('schedule/', ProgramScheduleView.as_view(), name='schedule-list'),
 ]

@@ -14,7 +14,18 @@ class SendNotificationView(APIView):
         title = serializer.validated_data['title']
         body = serializer.validated_data['body']
 
-        send_push_notification(title, body)
-        NotificationLog.objects.create(title=title, body=body)
+        try:
+            send_push_notification(title, body)
+            success = True
+            error_msg = None
+        except Exception as e:
+            success = False
+            error_msg = str(e)
 
+        NotificationLog.objects.create(title=title, body=body)  # Always log
+
+        if not success:
+
+            return Response({"status": "failed", "error": error_msg}, status=500)
+        
         return Response({"status": "sent"})

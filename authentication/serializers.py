@@ -51,10 +51,28 @@ class LoginSerializer(serializers.Serializer):
         return data
 
 
+# authentication/serializers.py
+
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Minimal serializer for register and login responses.
+    Intentionally excludes phone_number to prevent leaking it
+    in tokens, logs, or intercepted auth responses.
+    """
     class Meta:
         model = User
-        fields = ['id', 'name', 'phone_number']
+        fields = ['id', 'name']
+
+
+class ProfileSerializer(UserSerializer):
+    """
+    Extended serializer for the profile endpoint only.
+    Inherits from UserSerializer and adds phone_number,
+    which is appropriate since the user is explicitly
+    fetching their own profile.
+    """
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ['phone_number']
 
 
 class ResetPasswordSerializer(serializers.Serializer):

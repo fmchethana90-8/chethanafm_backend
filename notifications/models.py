@@ -5,5 +5,8 @@ class NotificationLog(models.Model):
     body = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-sent_at']
+
     def __str__(self):
         return self.title

@@ -28,4 +28,4 @@ class SendNotificationView(APIView):
 
             return Response({"status": "failed", "error": error_msg}, status=500)
         
-        return Response({"status": "sent"})
+        return Response({"status": "sent"})  

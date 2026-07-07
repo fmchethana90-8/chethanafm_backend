@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.contrib.auth import get_user_model
 
 from .models import SECURITY_QUESTIONS
@@ -19,6 +19,8 @@ User = get_user_model()
 
 
 class RegisterView(APIView):
+
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -31,6 +33,8 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -54,6 +58,8 @@ class SecurityQuestionsListView(APIView):
     Returns all available security questions.
     Flutter shows these as a dropdown during registration.
     """
+    permission_classes = [AllowAny]
+
     def get(self, request):
         questions = [
             {"key": q[0], "question": q[1]}
@@ -67,6 +73,7 @@ class GetSecurityQuestionView(APIView):
     Step 1 of forgot password.
     Flutter sends phone number → gets back which security question the user set.
     """
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = GetSecurityQuestionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -95,6 +102,8 @@ class VerifySecurityAnswerView(APIView):
     Step 2 of forgot password.
     Flutter sends phone + answer → verified or rejected.
     """
+
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = VerifySecurityAnswerSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -106,6 +115,8 @@ class ResetPasswordView(APIView):
     Step 3 of forgot password.
     Flutter sends phone + answer + new password → password updated.
     """
+
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

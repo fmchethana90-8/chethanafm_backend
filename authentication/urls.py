@@ -1,10 +1,20 @@
 from django.urls import path
-from .views import RegisterView, LoginView, ProfileView, CheckPhoneView, ResetPasswordView
+from .views import (
+    RegisterView,
+    LoginView,
+    ProfileView,
+    SecurityQuestionsListView,
+    GetSecurityQuestionView,
+    VerifySecurityAnswerView,
+    ResetPasswordView,
+)
 
 urlpatterns = [
-    path('register/',      RegisterView.as_view(),     name='auth-register'),
-    path('login/',         LoginView.as_view(),         name='auth-login'),
-    path('profile/',       ProfileView.as_view(),       name='auth-profile'),
-    path('check-phone/',   CheckPhoneView.as_view(),   name='auth-check-phone'),
-    path('reset-password/', ResetPasswordView.as_view(), name='auth-reset-password'),
+    path('register/', RegisterView.as_view()),
+    path('login/', LoginView.as_view()),
+    path('profile/', ProfileView.as_view()),
+    path('security-questions/', SecurityQuestionsListView.as_view()),
+    path('get-security-question/', GetSecurityQuestionView.as_view()),
+    path('verify-answer/', VerifySecurityAnswerView.as_view()),
+    path('reset-password/', ResetPasswordView.as_view()),
 ]

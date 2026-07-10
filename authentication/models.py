@@ -13,7 +13,8 @@ SECURITY_QUESTIONS = [
 class User(AbstractUser):
     username = None
     name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15, unique=True)
+    phone_number = models.CharField(max_length=20, unique=True)
+    country_code = models.CharField(max_length=5, default='+91')
     email = models.EmailField(blank=True, null=True)
     security_question = models.CharField(
         max_length=50,
@@ -29,4 +30,4 @@ class User(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return f"{self.name} ({self.phone_number})"
+        return f"{self.name} ({self.country_code}{self.phone_number})"

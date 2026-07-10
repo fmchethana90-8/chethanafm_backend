@@ -2,10 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 
 from .models import SECURITY_QUESTIONS
+from .validators import get_valid_country_codes
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -19,8 +20,8 @@ User = get_user_model()
 
 
 class RegisterView(APIView):
-
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -33,8 +34,8 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
-
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -53,11 +54,14 @@ class ProfileView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
+class CountryCodesView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(get_valid_country_codes())
+
+
 class SecurityQuestionsListView(APIView):
-    """
-    Returns all available security questions.
-    Flutter shows these as a dropdown during registration.
-    """
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -69,17 +73,13 @@ class SecurityQuestionsListView(APIView):
 
 
 class GetSecurityQuestionView(APIView):
-    """
-    Step 1 of forgot password.
-    Flutter sends phone number → gets back which security question the user set.
-    """
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = GetSecurityQuestionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        phone_number = serializer.validated_data['phone_number']
-        user = User.objects.get(phone_number=phone_number)
+        user = serializer.validated_data['user']
 
         if not user.security_question:
             return Response(
@@ -87,36 +87,30 @@ class GetSecurityQuestionView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Find the question text from the key
         question_text = dict(SECURITY_QUESTIONS).get(user.security_question, "")
 
         return Response({
-            "phone_number": phone_number,
+            "phone_number": user.phone_number,
+            "country_code": user.country_code,
             "security_question": user.security_question,
             "question_text": question_text,
         })
 
 
 class VerifySecurityAnswerView(APIView):
-    """
-    Step 2 of forgot password.
-    Flutter sends phone + answer → verified or rejected.
-    """
-
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = VerifySecurityAnswerSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({"message": "Answer verified. You can now reset your password."})
+        return Response({
+            "message": "Answer verified. You can now reset your password."
+        })
 
 
 class ResetPasswordView(APIView):
-    """
-    Step 3 of forgot password.
-    Flutter sends phone + answer + new password → password updated.
-    """
-
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

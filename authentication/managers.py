@@ -8,7 +8,11 @@ class UserManager(BaseUserManager):
         if not name:
             raise ValueError("Name is required")
 
-        user = self.model(phone_number=phone_number, name=name, **extra_fields)
+        user = self.model(
+            phone_number=phone_number,
+            name=name,
+            **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user

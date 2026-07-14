@@ -1,17 +1,13 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework import status
+from django.core.management.base import BaseCommand
 from django.utils import timezone
-from .models import LiveProgram
-from .serializers import LiveProgramSerializer
+from radio.models import LiveProgram
 from schedule.models import ProgramSchedule
 
 
-class LiveProgramView(APIView):
-    permission_classes = [AllowAny]
+class Command(BaseCommand):
+    help = 'Updates live program based on current schedule'
 
-    def get(self, request):
+    def handle(self, *args, **kwargs):
         now = timezone.localtime(timezone.now())
         current_time = now.time()
 
@@ -21,14 +17,13 @@ class LiveProgramView(APIView):
         }
         current_day = DAY_MAP[now.weekday()]
 
-        # Find current show from schedule
+        # Find matching schedule for current time
         current_show = ProgramSchedule.objects.filter(
             day=current_day,
             start_time__lte=current_time,
             end_time__gt=current_time
         ).first()
 
-        # Get or create live program entry
         live_program, _ = LiveProgram.objects.get_or_create(
             id=1,
             defaults={
@@ -43,12 +38,17 @@ class LiveProgramView(APIView):
             live_program.title = current_show.title
             live_program.rj = current_show.rj
             live_program.is_live = True
+            live_program.save()
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f'Live: {current_show.title} by {current_show.rj}'
+                )
+            )
         else:
             live_program.title = 'Off Air'
             live_program.rj = ''
             live_program.is_live = False
-
-        live_program.save()
-
-        serializer = LiveProgramSerializer(live_program)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            live_program.save()
+            self.stdout.write(
+                self.style.WARNING('No show now — set to Off Air')
+            )
